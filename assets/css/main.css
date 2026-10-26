@@ -1,0 +1,600 @@
+/* =========================================================================
+   FUNMANIAC — BASE, ESTRUCTURA Y COMPONENTES
+   Depende de los tokens de tokens.css.
+   ========================================================================= */
+
+/* -------------------------------------------------------------------------
+   1. BASE
+   ------------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--color-text);
+  background-color: var(--color-page);
+  background-image:
+    radial-gradient(60rem 36rem at 12% -10%, var(--glow-1), transparent 65%),
+    radial-gradient(48rem 30rem at 95% 8%,  var(--glow-2), transparent 60%),
+    radial-gradient(40rem 40rem at 50% 115%, var(--glow-3), transparent 70%);
+  background-attachment: fixed;
+  /* clip y no hidden: hidden convertiría al body en contenedor de scroll. */
+  overflow-x: clip;
+  transition: background-color var(--dur-mid) linear, color var(--dur-mid) linear;
+}
+
+/* Trama de puntos tenue, como el vidrio de una cabina. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: var(--z-dots);
+  background-image: radial-gradient(var(--tint-dots) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: radial-gradient(70% 60% at 50% 30%, #000 25%, transparent 85%);
+  -webkit-mask-image: radial-gradient(70% 60% at 50% 30%, #000 25%, transparent 85%);
+}
+
+img, svg { display: block; max-width: 100%; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+
+:focus-visible {
+  outline: 3px solid var(--color-accent-soft);
+  outline-offset: 3px;
+}
+
+/* -------------------------------------------------------------------------
+   2. ESTRUCTURA
+   ------------------------------------------------------------------------- */
+.shell {
+  position: relative;
+  z-index: var(--z-base);
+  width: 100%;
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding: 0 var(--space-gutter);
+}
+
+.icon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.icon--sm { width: 15px; height: 15px; }
+
+/* -------------------------------------------------------------------------
+   3. RIEL DE UTILIDADES (idioma · tema · configuraciones)
+   ------------------------------------------------------------------------- */
+.rail {
+  z-index: var(--z-rail);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
+  padding-top: clamp(1rem, 3vw, 1.75rem);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.95rem;
+  border: var(--line-hairline);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition: border-color var(--dur-fast) linear,
+              background-color var(--dur-fast) linear,
+              color var(--dur-fast) linear;
+}
+.pill:hover { background: var(--color-surface-high); border: var(--line-active); }
+.pill[aria-expanded="true"] { border: var(--line-active); color: var(--color-accent-soft); }
+
+.pill__value {
+  padding: 0.05rem 0.4rem;
+  border-radius: var(--radius-pill);
+  background: var(--tint-accent-weak);
+  color: var(--color-accent-soft);
+  font-size: 0.76rem;
+  letter-spacing: 0.06em;
+}
+
+.pill__chev { transition: transform var(--dur-fast) var(--ease-snap); }
+.pill[aria-expanded="true"] .pill__chev { transform: rotate(180deg); }
+
+/* Configuraciones queda siempre al extremo derecho. */
+.rail__spacer { flex: 1 1 auto; }
+
+/* --- Menús desplegables --- */
+.menu { position: relative; }
+
+.menu__panel {
+  position: absolute;
+  top: calc(100% + 0.6rem);
+  right: 0;
+  z-index: var(--z-panel);
+  width: max-content;
+  min-width: 13rem;
+  max-width: min(22rem, calc(100vw - 2 * var(--space-gutter)));
+  max-height: min(70vh, 30rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.6rem;
+  border: var(--line-hairline);
+  border-radius: var(--radius-inner);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-panel);
+}
+.menu__panel[hidden] { display: none; }
+
+.menu__item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 0;
+  border-radius: calc(var(--radius-inner) - 6px);
+  background: transparent;
+  color: var(--color-text);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-align: left;
+  transition: background-color var(--dur-fast) linear, color var(--dur-fast) linear;
+}
+.menu__item:hover { background: var(--tint-accent-weak); color: var(--color-accent-soft); }
+.menu__item > span:first-of-type { flex: 1; }
+.menu__item[aria-checked="true"] { color: var(--color-accent-soft); font-weight: 700; }
+.menu__check { opacity: 0; color: var(--color-accent-soft); }
+.menu__item[aria-checked="true"] .menu__check { opacity: 1; }
+
+/* --- Panel de configuraciones --- */
+.settings__note {
+  margin: 0 0 0.5rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: calc(var(--radius-inner) - 6px);
+  background: var(--tint-accent-weak);
+  color: var(--color-text);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.settings__group + .settings__group {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: var(--line-hairline);
+}
+
+.settings__groupTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.3rem;
+  padding: 0 0.7rem;
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.settings__rows { margin: 0; padding: 0; }
+
+.settings__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.75rem;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.3rem 0.7rem;
+}
+.settings__row dt { font-size: 0.92rem; }
+.settings__row dd {
+  margin: 0;
+  color: var(--color-text-dim);
+  font-size: 0.85rem;
+}
+
+/* -------------------------------------------------------------------------
+   4. ENCABEZADO
+   ------------------------------------------------------------------------- */
+.masthead {
+  padding-top: clamp(1.5rem, 5vw, 3rem);
+  padding-bottom: var(--space-block);
+}
+
+.masthead__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 0.08em;
+  font-size: clamp(3.2rem, 12vw, 8.4rem);
+  color: var(--color-text);
+  text-shadow: var(--shadow-word-1);
+}
+.masthead__title em {
+  font-style: normal;
+  color: var(--color-accent-soft);
+  text-shadow: var(--shadow-word-2);
+}
+
+.masthead__lede {
+  max-width: 50ch;
+  margin: 1.5rem 0 0;
+  font-size: clamp(1rem, 1.6vw, 1.12rem);
+  line-height: 1.55;
+  color: var(--color-text);
+}
+.masthead__lede b { color: var(--color-accent-soft); font-weight: 700; }
+
+/* --- Barra de control: buscador + azar + contador --- */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.well {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: 1 1 18rem;
+  padding: 0.55rem 1.1rem;
+  border: var(--line-hairline);
+  border-radius: var(--radius-well);
+  background: var(--color-page-deep);
+  box-shadow: var(--shadow-inset-well);
+  transition: border-color var(--dur-fast) var(--ease-snap);
+}
+.well:focus-within { border: var(--line-active); }
+.well__icon { flex: none; width: 18px; height: 18px; color: var(--color-accent-soft); }
+
+.well__input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.35rem 0;
+  border: 0;
+  background: transparent;
+  font-size: 0.95rem;
+}
+.well__input::placeholder { color: var(--color-text-dim); opacity: 0.85; }
+.well__input:focus { outline: none; }
+.well__input::-webkit-search-cancel-button { filter: grayscale(1); }
+
+.btn-chance {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.35rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  box-shadow: 0 0 0 0 var(--tint-accent-ring);
+  transition: transform var(--dur-fast) var(--ease-snap),
+              box-shadow var(--dur-mid) var(--ease-snap),
+              background-color var(--dur-fast) linear;
+}
+.btn-chance:hover:not(:disabled) {
+  background: var(--color-accent-soft);
+  transform: translateY(-2px) rotate(-1.5deg);
+  box-shadow: 0 0 0 8px var(--tint-accent-ring);
+}
+.btn-chance:active:not(:disabled) { transform: translateY(1px) scale(0.98); }
+.btn-chance:disabled {
+  background: transparent;
+  border: var(--line-hairline);
+  color: var(--color-text-dim);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.tally {
+  flex: none;
+  padding-left: 0.35rem;
+  color: var(--color-text-dim);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.tally b { color: var(--color-text); font-weight: 700; }
+
+.controls__note {
+  flex: 1 1 100%;
+  margin: 0;
+  color: var(--color-accent-soft);
+  font-size: 0.88rem;
+}
+.controls__note:empty { display: none; }
+
+/* -------------------------------------------------------------------------
+   5. GRILLA DE JUEGOS
+   ------------------------------------------------------------------------- */
+.rack {
+  display: grid;
+  /* align-items: start evita que abrir una ficha estire a sus vecinas. */
+  align-items: start;
+  gap: clamp(1.25rem, 2.5vw, 2rem);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+  padding-bottom: var(--space-block);
+}
+
+.noscript {
+  margin: 0 0 2rem;
+  padding: 1rem 1.25rem;
+  border: var(--line-active);
+  border-radius: var(--radius-inner);
+  background: var(--tint-accent-weak);
+}
+
+/* --- Tarjeta: losa de resina con ventana luminosa --- */
+.cab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.1rem 1.1rem 1.2rem;
+  background:
+    linear-gradient(165deg, color-mix(in srgb, var(--color-text) 7%, transparent), transparent 42%),
+    var(--color-surface);
+  border: var(--line-hairline);
+  border-radius: var(--radius-card) var(--radius-notch) var(--radius-card) var(--radius-card);
+  box-shadow: var(--shadow-plate);
+  transition: box-shadow var(--dur-mid) var(--ease-snap),
+              border-color var(--dur-mid) linear,
+              background-color var(--dur-mid) linear;
+}
+/* display:flex le gana a [hidden], así que lo declaramos explícito. */
+.cab[hidden] { display: none; }
+
+/* La tarjeta no navega: el realce aparece cuando el foco entra en sus controles. */
+.cab:focus-within {
+  border: var(--line-active);
+  box-shadow: var(--shadow-plate-hover);
+}
+
+/* --- Portada --- */
+.cab__cover {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--radius-inner);
+  border: var(--line-hairline);
+  background:
+    radial-gradient(120% 90% at 20% 0%, var(--color-surface-high), transparent 60%),
+    var(--color-page-deep);
+}
+.cab__cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* Respaldo cuando la imagen no carga (sin conexión, src vacío, etc.). */
+.cab__fallback {
+  position: absolute;
+  inset: 0;
+  display: none;
+  place-items: center;
+  font-size: 2.6rem;
+  line-height: 1;
+}
+.cab__cover.is-fallback img { display: none; }
+.cab__cover.is-fallback .cab__fallback { display: grid; }
+
+.cab__chip {
+  position: absolute;
+  left: 0.6rem;
+  bottom: 0.6rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-chip);
+  color: var(--color-chip-ink);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.82rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  box-shadow: var(--shadow-sticker);
+}
+.chip--accent { background: var(--color-accent-soft); color: var(--color-on-accent); }
+
+/* --- Identidad --- */
+.cab__title { color: var(--color-text); }
+
+.cab__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: -0.35rem;
+}
+.cab__dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 10px var(--color-accent);
+}
+.cab__sep { color: var(--color-text-dim); opacity: 0.7; }
+
+/* --- Acciones --- */
+.cab__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.cab__play {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 1.15rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background-color var(--dur-fast) linear, gap var(--dur-fast) var(--ease-snap);
+}
+.cab__play::after { content: "→"; transition: transform var(--dur-fast) var(--ease-snap); }
+.cab__play:hover { background: var(--color-accent-soft); gap: 0.7rem; }
+.cab__play:hover::after { transform: translateX(3px); }
+
+.cab__more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border: var(--line-hairline);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text);
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition: border-color var(--dur-fast) linear, color var(--dur-fast) linear,
+              background-color var(--dur-fast) linear;
+}
+.cab__more:hover { border: var(--line-active); color: var(--color-accent-soft); }
+.cab__more .icon { transition: transform var(--dur-fast) var(--ease-snap); }
+.cab__more[aria-expanded="true"] .icon { transform: rotate(180deg); }
+
+/* --- Cajón de información: se anima grid-template-rows, no la altura --- */
+.cab__drawer {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--dur-mid) var(--ease-snap);
+}
+.cab.is-open .cab__drawer { grid-template-rows: 1fr; }
+
+.cab__drawerIn {
+  overflow: hidden;
+  visibility: hidden;
+  transition: visibility 0s linear var(--dur-mid);
+}
+.cab.is-open .cab__drawerIn {
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.cab__detail {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: var(--line-hairline);
+}
+.cab__howTitle {
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  margin: 0.25rem 0 0;
+}
+
+/* Destello al usar "Sorpréndeme". */
+.cab.is-picked {
+  animation: picked 900ms var(--ease-snap);
+  border: 1px solid var(--color-accent);
+}
+@keyframes picked {
+  0%, 100% { box-shadow: var(--shadow-plate); }
+  25%      { box-shadow: 0 0 0 10px var(--tint-accent-ring), var(--shadow-plate-hover); }
+  60%      { box-shadow: 0 0 0 2px var(--tint-accent-ring), var(--shadow-plate-hover); }
+}
+
+/* -------------------------------------------------------------------------
+   6. ESTADO VACÍO
+   ------------------------------------------------------------------------- */
+.void {
+  display: none;
+  padding: 1rem 0 4rem;
+}
+.void[data-visible="true"] { display: block; }
+.void__glyph { font-size: 2.6rem; line-height: 1; }
+.void__text { margin-top: 0.6rem; }
+.void__clear {
+  margin-top: 1rem;
+  padding: 0.5rem 1.1rem;
+  border: var(--line-active);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-accent-soft);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.void__clear:hover { background: var(--tint-accent-weak); }
+
+/* -------------------------------------------------------------------------
+   7. PIE
+   ------------------------------------------------------------------------- */
+.footer {
+  border-top: var(--line-hairline);
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--color-page-deep) 85%, transparent));
+}
+.footer__inner { padding: 1.5rem 0 2.25rem; }
+
+/* -------------------------------------------------------------------------
+   8. RESPONSIVE
+   ------------------------------------------------------------------------- */
+@media (max-width: 760px) {
+  .rail { gap: 0.4rem; }
+  .pill { padding: 0.45rem 0.8rem; }
+  .btn-chance { flex: 1 1 100%; justify-content: center; }
+  .tally { flex: 1 1 100%; padding-left: 0; }
+}
+
+@media (max-width: 420px) {
+  /* El riel se parte en dos filas sin que Configuraciones deje la derecha. */
+  .rail { justify-content: flex-end; }
+  .pill__label { display: none; }
+  .menu--settings .pill__label { display: inline; }
+}
+
+/* -------------------------------------------------------------------------
+   9. MOVIMIENTO REDUCIDO
+   ------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .btn-chance:hover:not(:disabled) { transform: none; }
+  .cab__drawer { transition: none; }
+}

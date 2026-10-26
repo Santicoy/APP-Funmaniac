@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Funmaniac — minijuegos cortos para el navegador</title>
+<meta name="description" content="Funmaniac: una colección chica de minijuegos y experimentos interactivos que abren en un segundo, sin cuentas ni anuncios." />
+<meta name="theme-color" content="#2E005D" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="assets/css/tokens.css" />
+<link rel="stylesheet" href="assets/css/main.css" />
+
+<script>
+  /* Tema guardado, aplicado antes del primer pintado para que no haya salto. */
+  (function () {
+    try {
+      var saved = window.localStorage.getItem("funmaniac:theme");
+      if (saved === "light" || saved === "dark") {
+        document.documentElement.setAttribute("data-theme", saved);
+      }
+    } catch (error) { /* modo privado: queda el tema oscuro por defecto */ }
+  })();
+</script>
+</head>
+
+<body>
+  <!-- ===================================================================
+       Riel de utilidades: idioma · tema · configuraciones
+       Configuraciones queda siempre en el extremo derecho.
+       =================================================================== -->
+  <div class="rail shell">
+
+    <!-- Idioma -->
+    <div class="menu" data-menu="lang">
+      <button class="pill" type="button" data-menu-trigger aria-haspopup="true"
+              aria-expanded="false" aria-controls="menu-idioma"
+              data-i18n-attr="title:ui.languageHint">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 5h7M9 3v2c0 4.4-2 8-5 9" />
+          <path d="M5 9c0 2.1 2.7 4 6 4M12 20l4-9 4 9M19.1 18h-6.2" />
+        </svg>
+        <span class="pill__label" data-i18n="ui.language">Idioma</span>
+        <span class="pill__value" data-lang-value>ES</span>
+        <svg class="icon icon--sm pill__chev" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </button>
+      <div class="menu__panel" id="menu-idioma" role="menu" data-menu-panel data-lang-panel hidden>
+        <!-- Las opciones se generan desde i18n.js -->
+      </div>
+    </div>
+
+    <!-- Tema: alterna oscuro / claro y recuerda la elección -->
+    <button class="pill" type="button" data-theme-toggle aria-pressed="false"
+            data-i18n-attr="title:ui.themeHint">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" data-theme-icon="dark">
+        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z" />
+      </svg>
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" data-theme-icon="light" hidden>
+        <circle cx="12" cy="12" r="4" />
+        <path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6l1.4 1.4m10 10 1.4 1.4m0-12.8-1.4 1.4m-10 10-1.4 1.4" />
+      </svg>
+      <span class="pill__label" data-i18n="ui.theme">Tema</span>
+      <span class="pill__value" data-theme-state>Oscuro</span>
+    </button>
+
+    <!-- Configuraciones -->
+    <div class="menu menu--settings" data-menu="settings">
+      <button class="pill" type="button" data-menu-trigger aria-haspopup="true"
+              aria-expanded="false" aria-controls="menu-ajustes">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M10.3 4.3a1.7 1.7 0 0 1 3.4 0 1.7 1.7 0 0 0 2.6 1.1 1.7 1.7 0 0 1 2.4 2.4 1.7 1.7 0 0 0 1.1 2.6 1.7 1.7 0 0 1 0 3.4 1.7 1.7 0 0 0-1.1 2.6 1.7 1.7 0 0 1-2.4 2.4 1.7 1.7 0 0 0-2.6 1.1 1.7 1.7 0 0 1-3.4 0 1.7 1.7 0 0 0-2.6-1.1 1.7 1.7 0 0 1-2.4-2.4 1.7 1.7 0 0 0-1.1-2.6 1.7 1.7 0 0 1 0-3.4 1.7 1.7 0 0 0 1.1-2.6 1.7 1.7 0 0 1 2.4-2.4 1.7 1.7 0 0 0 2.6-1.1z" />
+          <circle cx="12" cy="12" r="2.6" />
+        </svg>
+        <span class="pill__label" data-i18n="ui.settings">Configuraciones</span>
+        <svg class="icon icon--sm pill__chev" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </button>
+
+      <div class="menu__panel" id="menu-ajustes" role="group" data-menu-panel
+           data-i18n-attr="aria-label:ui.settings" hidden>
+        <p class="settings__note" data-i18n="settings.note">
+          Opciones de ejemplo. Todavía no se pueden cambiar.
+        </p>
+
+        <section class="settings__group">
+          <h3 class="settings__groupTitle" data-i18n="settings.account">Cuenta</h3>
+          <dl class="settings__rows">
+            <div class="settings__row">
+              <dt data-i18n="settings.account.profile">Perfil</dt>
+              <dd data-i18n="settings.unavailable">No disponible todavía</dd>
+            </div>
+            <div class="settings__row">
+              <dt data-i18n="settings.account.data">Datos guardados</dt>
+              <dd data-i18n="settings.unavailable">No disponible todavía</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="settings__group">
+          <h3 class="settings__groupTitle" data-i18n="settings.audio">Audio</h3>
+          <dl class="settings__rows">
+            <div class="settings__row">
+              <dt data-i18n="settings.audio.volume">Volumen general</dt>
+              <dd data-i18n="settings.unavailable">No disponible todavía</dd>
+            </div>
+            <div class="settings__row">
+              <dt data-i18n="settings.audio.effects">Efectos</dt>
+              <dd data-i18n="settings.unavailable">No disponible todavía</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="settings__group">
+          <h3 class="settings__groupTitle" data-i18n="settings.video">Vídeo</h3>
+          <dl class="settings__rows">
+            <div class="settings__row">
+              <dt data-i18n="settings.video.quality">Calidad</dt>
+              <dd data-i18n="settings.unavailable">No disponible todavía</dd>
+            </div>
+            <div class="settings__row">
+              <dt data-i18n="settings.video.fullscreen">Pantalla completa</dt>
+              <dd data-i18n="settings.unavailable">No disponible todavía</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="settings__group">
+          <h3 class="settings__groupTitle" data-i18n="settings.controls">Controles</h3>
+          <dl class="settings__rows">
+            <div class="settings__row">
+              <dt data-i18n="settings.controls.keyboard">Teclado</dt>
+              <dd data-i18n="settings.unavailable">No disponible todavía</dd>
+            </div>
+            <div class="settings__row">
+              <dt data-i18n="settings.controls.touch">Pantalla táctil</dt>
+              <dd data-i18n="settings.unavailable">No disponible todavía</dd>
+            </div>
+          </dl>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <header class="masthead shell">
+    <h1 class="t-display masthead__title">Fun<em>maniac</em></h1>
+
+    <p class="masthead__lede" data-i18n-html="app.lede">
+      Seis minijuegos cortos para los huecos del día. Abrís uno, jugás un rato y
+      listo: <b>sin cuentas ni puntajes</b> que mantener.
+    </p>
+
+    <div class="controls">
+      <label class="sr-only" for="buscador" data-i18n="ui.searchLabel">Buscar entre los minijuegos</label>
+      <div class="well">
+        <svg class="well__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-3.6-3.6" />
+        </svg>
+        <input
+          id="buscador"
+          class="well__input"
+          type="search"
+          autocomplete="off"
+          data-i18n-attr="placeholder:ui.searchPlaceholder"
+          placeholder="Nombre o categoría"
+        />
+      </div>
+
+      <button class="btn-chance" type="button" data-chance>
+        <span aria-hidden="true">🎲</span>
+        <span data-i18n="ui.surprise">Sorpréndeme</span>
+      </button>
+
+      <p class="tally" data-tally aria-live="polite"></p>
+      <p class="controls__note" data-note aria-live="polite"></p>
+    </div>
+  </header>
+
+  <main class="shell">
+    <noscript>
+      <p class="noscript" data-i18n="noscript">
+        Esta página arma el catálogo con JavaScript. Activalo para ver los minijuegos.
+      </p>
+    </noscript>
+
+    <!-- Las tarjetas se generan desde assets/js/games.js -->
+    <div class="rack" data-rack></div>
+
+    <section class="void" data-void aria-live="polite">
+      <p class="void__glyph" aria-hidden="true">🫥</p>
+      <p class="t-title void__text" data-i18n="void.title">Nada por acá</p>
+      <p class="t-body" data-i18n="void.text">
+        Ningún minijuego coincide con esa búsqueda. Probá con otra palabra.
+      </p>
+      <button class="void__clear" type="button" data-clear data-i18n="void.clear">Borrar búsqueda</button>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="shell footer__inner">
+      <p class="t-body" data-i18n="footer.note">Todo corre en tu navegador.</p>
+    </div>
+  </footer>
+
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/games.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
